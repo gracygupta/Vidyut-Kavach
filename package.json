@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "morgan": "^1.10.0"
+  },
+  "name": "vidyut",
+  "version": "1.0.0",
+  "description": " CYBER-SECURITY ENABLED SMART CONTROLLER for grid-connected Microgrid",
+  "main": "/src/app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm start",
+    "start": "node /src/app.js",
+    "dev": "nodemon /src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gracygupta/SIH2023.git"
+  },
+  "keywords": [
+    "typescript",
+    "express",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "Gracy Gupta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gracygupta/SIH2023/issues"
+  },
+  "homepage": "https://github.com/gracygupta/SIH2023#readme"
+}
