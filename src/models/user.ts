@@ -45,7 +45,7 @@ const userSchema = new Schema<User>({
         type: String,
         required: true
     }
-})
+}, {timestamps: true})
 
 const User = model<User>('user',userSchema);
 

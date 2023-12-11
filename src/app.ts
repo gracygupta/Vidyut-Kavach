@@ -4,7 +4,7 @@ import dbConnect from './db/conn';
 import {json ,urlencoded} from 'body-parser';
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 5000;
 dbConnect();
 
 app.use(json());

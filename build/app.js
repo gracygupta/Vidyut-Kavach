@@ -8,7 +8,7 @@ const express_1 = __importDefault(require("express"));
 const conn_1 = __importDefault(require("./db/conn"));
 const body_parser_1 = require("body-parser");
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 5000;
 (0, conn_1.default)();
 app.use((0, body_parser_1.json)());
 app.use((0, body_parser_1.urlencoded)({ extended: true }));

@@ -6,8 +6,8 @@
   "scripts": {
     "test": "npm start",
     "start": "node ./build/app.js",
-    "dev": "nodemon ./src/app.ts",
-    "build": "npx tsc"
+    "build": "npx tsc",
+    "dev": " ts-node-dev ./src/app.ts"
   },
   "repository": {
     "type": "git",
@@ -27,22 +27,30 @@
   "homepage": "https://github.com/gracygupta/SIH2023#readme",
   "dependencies": {
     "@types/express": "^4.17.21",
+    "aes-encryption": "^1.0.4",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.9.7",
     "nodemon": "^3.0.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/body-parser": "^1.19.5",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",
     "@types/express-validator": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.10.4",
+    "@types/nodemailer": "^6.4.14",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   }
