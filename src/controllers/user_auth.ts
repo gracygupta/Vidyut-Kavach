@@ -1,4 +1,5 @@
 import User from '../models/user';
+import Role from '../models/roles';
 import bcrypt from 'bcryptjs';
 import {Request, Response, NextFunction} from 'express';
 import Otp from '../models/otp';
@@ -69,38 +70,47 @@ const verifyCredentials = async (req: Request, res: Response, next: NextFunction
     }
 }
 
-const verifyOtp = async (req:Request, res: Response, next: NextFunction)=>{
-    try{
-        const {empID, otp} = req.body;
-        await Otp.findOne({empID: empID}).then(async data=>{
-            console.log(data," ", otp);
-            if(data && otp === data.otp && data.otpExpiresAt >= new Date()){
-                const user  = await User.findOne({empID:empID});
-                if(user){
-                    const token = jwt.sign(
-                        { email: user.email, empID: user.empID, _id: user._id},
-                        SECRET_KEY
-                      );
-                      return res.status(200).json({
-                        success: true,
-                        token: token
-                    })
-                }                
-            }else{
-                return res.status(500).json({
-                    success: false,
-                    message: "incorrect otp"
-                })
-            }
-        })
+const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { empID, otp } = req.body;
+
+    const otpData = await Otp.findOne({ empID }).sort({ _id: -1 });
+    if (otpData && otp === otpData.otp && otpData.otpExpiresAt >= new Date()) {
+      const user = await User.findOne({ empID });
+
+      if (user) {
+        var role = await Role.findById(user.role);
+        var roleName;
+        if (role && role.name) {
+            roleName = role.name;
+          }
+        const token = jwt.sign(
+          { email: user.email, empID: user.empID, _id: user._id },
+          SECRET_KEY
+        );
+
+        return res.status(200).json({
+          success: true,
+          token,
+          role: roleName,
+        });
+      }
+    } else {
+      return res.status(500).json({
+        success: false,
+        message: "Incorrect OTP or expired",
+      });
     }
-    catch(err){
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message:"Internal Server Error"
-        })
-    }
-}
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export default verifyOtp;
+
 
 export { signUp, verifyCredentials, verifyOtp };

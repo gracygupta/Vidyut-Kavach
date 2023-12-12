@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyOtp = exports.verifyCredentials = exports.signUp = void 0;
 const user_1 = __importDefault(require("../models/user"));
+const roles_1 = __importDefault(require("../models/roles"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const otp_1 = __importDefault(require("../models/otp"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -86,32 +87,37 @@ exports.verifyCredentials = verifyCredentials;
 const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { empID, otp } = req.body;
-        yield otp_1.default.findOne({ empID: empID }).then((data) => __awaiter(void 0, void 0, void 0, function* () {
-            console.log(data, " ", otp);
-            if (data && otp === data.otp && data.otpExpiresAt >= new Date()) {
-                const user = yield user_1.default.findOne({ empID: empID });
-                if (user) {
-                    const token = jsonwebtoken_1.default.sign({ email: user.email, empID: user.empID, _id: user._id }, SECRET_KEY);
-                    return res.status(200).json({
-                        success: true,
-                        token: token
-                    });
+        const otpData = yield otp_1.default.findOne({ empID }).sort({ _id: -1 });
+        if (otpData && otp === otpData.otp && otpData.otpExpiresAt >= new Date()) {
+            const user = yield user_1.default.findOne({ empID });
+            if (user) {
+                var role = yield roles_1.default.findById(user.role);
+                var roleName;
+                if (role && role.name) {
+                    roleName = role.name;
                 }
-            }
-            else {
-                return res.status(500).json({
-                    success: false,
-                    message: "incorrect otp"
+                const token = jsonwebtoken_1.default.sign({ email: user.email, empID: user.empID, _id: user._id }, SECRET_KEY);
+                return res.status(200).json({
+                    success: true,
+                    token,
+                    role: roleName,
                 });
             }
-        }));
+        }
+        else {
+            return res.status(500).json({
+                success: false,
+                message: "Incorrect OTP or expired",
+            });
+        }
     }
     catch (err) {
-        console.log(err);
+        console.error(err);
         res.status(500).json({
             success: false,
-            message: "Internal Server Error"
+            message: "Internal Server Error",
         });
     }
 });
 exports.verifyOtp = verifyOtp;
+exports.default = verifyOtp;
