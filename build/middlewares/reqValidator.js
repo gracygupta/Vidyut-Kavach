@@ -12,30 +12,47 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isCorrectRole = exports.isEmpIdUnique = exports.isEmailUnique = void 0;
-const mongoose_1 = __importDefault(require("mongoose"));
+exports.validateRequest = exports.isCorrectRole = exports.isEmpIdUnique = exports.isEmailUnique = void 0;
+const express_validator_1 = require("express-validator");
 const user_1 = __importDefault(require("../models/user"));
 const roles_1 = __importDefault(require("../models/roles"));
 // Custom validation function to check if the email already exists
 const isEmailUnique = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const existingUser = yield user_1.default.findOne({ email: email });
     if (existingUser) {
-        throw new Error("User with this email address already exists.");
+        throw new Error("user already exists.");
     }
 });
 exports.isEmailUnique = isEmailUnique;
-const isEmpIdUnique = (empId) => __awaiter(void 0, void 0, void 0, function* () {
-    const existingUser = yield user_1.default.findOne({ empID: empId });
+const isEmpIdUnique = (empID) => __awaiter(void 0, void 0, void 0, function* () {
+    const existingUser = yield user_1.default.findOne({ empID: empID });
     if (existingUser) {
-        throw new Error("User with this employee id already exists.");
+        throw new Error("user already exist");
     }
 });
 exports.isEmpIdUnique = isEmpIdUnique;
 const isCorrectRole = (role) => __awaiter(void 0, void 0, void 0, function* () {
-    const objectId = new mongoose_1.default.Types.ObjectId(role);
-    const existingUser = yield roles_1.default.findById({ objectId });
-    if (!existingUser) {
-        throw new Error("This user role does not exist.");
+    try {
+        const existingRole = yield roles_1.default.findById(role);
+        if (!existingRole) {
+            throw new Error("Role does not exist");
+        }
+    }
+    catch (err) {
+        console.log(err);
     }
 });
 exports.isCorrectRole = isCorrectRole;
+const validateRequest = (req, res, next) => {
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({
+            success: false,
+            errors: errors.array(),
+        });
+    }
+    else {
+        next();
+    }
+};
+exports.validateRequest = validateRequest;

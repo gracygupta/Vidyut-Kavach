@@ -4,14 +4,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const router = express_1.default.Router();
+const admin = express_1.default.Router();
 const express_validator_1 = require("express-validator");
 const reqValidator_1 = require("../middlewares/reqValidator");
-// @route   POST /signup
-// @desc    Register user and return jwt and user object
+const user_auth_1 = require("../controllers/user_auth");
+const miscellaneous_1 = require("../controllers/miscellaneous");
+// @route   POST /get_privileges
+// @desc    get all privileges
 // @access  Public
-router.post("/signup", [
-    (0, express_validator_1.body)("empId", "Employee ID missing.").exists().isString().custom(reqValidator_1.isEmpIdUnique),
+admin.get("/get_privileges", miscellaneous_1.get_privileges);
+// @route   POST /add_privilege
+// @desc    add privileges for roles
+// @access  Admin
+admin.post("/add_privilege", [
+    (0, express_validator_1.body)("name", "name is required").exists().isString()
+], reqValidator_1.validateRequest, miscellaneous_1.add_privilege);
+// @route   POST /add_role
+// @desc    add user role and privileges
+// @access  Admin
+admin.post("/add_role", [
+    (0, express_validator_1.body)("name", "name of role is required").exists(),
+    (0, express_validator_1.body)("privileges", "select privileges").exists().isArray()
+], reqValidator_1.validateRequest, miscellaneous_1.add_role);
+// @route   POST /get_role
+// @desc    get all roles
+// @access  Public
+admin.get("/get_roles", miscellaneous_1.get_roles);
+// @route   POST /signup
+// @desc    Register user
+// @access  Admin
+admin.post("/signup", [
+    (0, express_validator_1.body)("empID", "Employee ID missing.")
+        .exists()
+        .isString()
+        .custom(reqValidator_1.isEmpIdUnique),
     (0, express_validator_1.body)("username", "Name should be at least 5 characters.")
         .exists()
         .isString()
@@ -20,19 +46,12 @@ router.post("/signup", [
         .exists()
         .isEmail()
         .custom(reqValidator_1.isEmailUnique),
-    (0, express_validator_1.body)("role", "Role is not specified.").exists().isString().custom(reqValidator_1.isCorrectRole),
+    (0, express_validator_1.body)("role", "Role is not specified.")
+        .exists()
+        .isString()
+        .custom(reqValidator_1.isCorrectRole),
     (0, express_validator_1.body)("password", "Password should be at least 2 characters.")
         .exists()
         .isLength({ min: 6 }),
-]);
-// @route   POST /signin
-// @desc    Login user and return jwt and user object
-// @access  Public
-router.post("/signin", [
-    (0, express_validator_1.body)("email", "Email is required.")
-        .exists()
-        .isEmail(),
-    // .custom(utilController.isUserExist),
-    (0, express_validator_1.body)("password", "Password is required.")
-        .exists()
-]);
+], reqValidator_1.validateRequest, user_auth_1.signUp);
+exports.default = admin;

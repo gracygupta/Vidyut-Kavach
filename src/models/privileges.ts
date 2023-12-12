@@ -16,7 +16,8 @@ const privilegeSchema = new Schema<Privilege>({
         required: true
     },
     description: {
-        type: String
+        type: String,
+        default: ""
     }
 },{ timestamps: true })
 

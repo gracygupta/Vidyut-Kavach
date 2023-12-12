@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import logger from "morgan";
 import cors from "cors";
 import createError from "http-errors";
+import router from './routes/router';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,7 +32,7 @@ app.get("/", (req: Request, res: Response): Response => {
   return res.status(200).json({ message: "connected to server" });
 });
 
-// app.use("/",router);
+app.use("/",router);
 
 //NOT found page
 app.use((req, res) => {

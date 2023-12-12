@@ -6,7 +6,8 @@ export interface UserDocument extends Document{
     role: ObjectId,
     email: string,
     about: string | undefined,
-    password: string
+    password: string,
+    isVerified: boolean | undefined
 }
 
 interface User {
@@ -15,7 +16,8 @@ interface User {
     role: ObjectId,
     email: string,
     about: string | undefined,
-    password: string
+    password: string,
+    isVerified: boolean  | undefined
 }
 
 const userSchema = new Schema<User>({
@@ -51,6 +53,10 @@ const userSchema = new Schema<User>({
     password: {
         type: String,
         required: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     }
 }, {timestamps: true})
 

@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from "express";
 import mongoose from 'mongoose';
 import { validationResult } from 'express-validator';
 import { IsEmailOptions } from 'express-validator/src/options';
@@ -8,21 +9,38 @@ import Role from '../models/roles';
 const isEmailUnique = async (email:IsEmailOptions) => {
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      throw new Error("User with this email address already exists.");
+      throw new Error("user already exists.");
     }
   };
 
-const isEmpIdUnique = async (empId : string) => {
-    const existingUser = await User.findOne({ empID: empId });
+const isEmpIdUnique = async (empID : string) => {
+    const existingUser = await User.findOne({ empID: empID });
     if (existingUser) {
-      throw new Error("User with this employee id already exists.");
+      throw new Error("user already exist");
     }
 };
+
 const isCorrectRole = async (role : string) => {
-    const objectId = new mongoose.Types.ObjectId(role);
-    const existingUser = await Role.findById({ objectId });
-    if (!existingUser) {
-      throw new Error("This user role does not exist.");
+    try {
+        const existingRole = await Role.findById(role);
+        
+        if (!existingRole) {
+        throw new Error("Role does not exist");
+        }
+    }catch(err){
+        console.log(err);
     }
 };
-export {isEmailUnique, isEmpIdUnique, isCorrectRole};
+
+const validateRequest = (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        success: false,
+        errors: errors.array(),
+      });
+    } else {
+      next();
+    }
+  };
+export {isEmailUnique, isEmpIdUnique, isCorrectRole, validateRequest};

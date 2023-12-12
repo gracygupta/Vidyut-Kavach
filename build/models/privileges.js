@@ -7,7 +7,8 @@ const privilegeSchema = new mongoose_1.Schema({
         required: true
     },
     description: {
-        type: String
+        type: String,
+        default: ""
     }
 }, { timestamps: true });
 const Privilege = (0, mongoose_1.model)('privileges', privilegeSchema);
