@@ -1,4 +1,4 @@
-import { workerData } from 'worker_threads';
+const workerData = require('worker_threads');
 import nodemailer from 'nodemailer';
 const handlebars = require("handlebars");
 const fs = require("fs");

@@ -1,4 +1,4 @@
-import { Worker } from "worker_threads";
+const Worker = require('worker_threads');
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import Otp from "../models/otp";
