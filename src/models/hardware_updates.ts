@@ -35,7 +35,8 @@ const hardwareUpdateSchema = new Schema<HardwareUpdate>({
     },
     status: {
         type: String,
-        enum: ['yes', 'no']
+        enum: ['yes', 'no'],
+        default: 'no'
     }
 }, { timestamps: true })
 
