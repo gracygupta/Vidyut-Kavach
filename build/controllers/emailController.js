@@ -30,11 +30,12 @@ const sendOTP = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             otp: otp,
             otpExpiresAt: otpExpiresAt,
         }).then(() => {
-            new worker_threads_1.Worker("./src/controllers/sendOtpEmail.ts", {
-                workerData: { email: email, otp: otp },
+            new worker_threads_1.Worker("./src/controllers/sendEmail.ts", {
+                workerData: { email: email, otp: otp, template: "emailTemplate/otp.html", subject: "One Time Password (OTP)" },
             });
             return res.status(200).json({
                 status: true,
+                email: email,
                 message: "email sent successfully",
             });
         })
