@@ -9,8 +9,10 @@ let email = workerData.email;
 let otp = workerData.otp;
 let htmltemplate = workerData.template;
 let subject = workerData.subject;
+console.log(htmltemplate);
 
-const templatePath = path.join(__dirname, htmltemplate);
+const templatePath = path.join(__dirname, "otp.html");
+console.log(templatePath)
 // Compile the Handlebars template
 const source = fs.readFileSync(templatePath, "utf8");
 const template = handlebars.compile(source);
