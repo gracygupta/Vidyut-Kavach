@@ -1,5 +1,5 @@
 const workerData = require('worker_threads');
-import nodemailer from 'nodemailer';
+const nodemailer = require("nodemailer");
 const handlebars = require("handlebars");
 const fs = require("fs");
 const path = require("path");
