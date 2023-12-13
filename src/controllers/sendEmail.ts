@@ -7,8 +7,10 @@ const path = require("path");
 //export
 let email = workerData.email;
 let otp = workerData.otp;
+let htmltemplate = workerData.template;
+let subject = workerData.subject;
 
-const templatePath = path.join(__dirname, "otp.html");
+const templatePath = path.join(__dirname, htmltemplate);
 // Compile the Handlebars template
 const source = fs.readFileSync(templatePath, "utf8");
 const template = handlebars.compile(source);
@@ -32,7 +34,7 @@ const transporter = nodemailer.createTransport({
 var mailOptions = {
     from: process.env.EMAIL,
     to: email,
-    subject: "One Time Password (OTP)",
+    subject: subject,
     html: html,
 };
 

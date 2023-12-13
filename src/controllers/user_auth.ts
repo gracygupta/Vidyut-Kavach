@@ -110,7 +110,4 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default verifyOtp;
-
-
 export { signUp, verifyCredentials, verifyOtp };

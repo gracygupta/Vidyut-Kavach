@@ -19,11 +19,12 @@ const sendOTP = async (req: Request, res: Response, next: NextFunction) => {
         otp: otp,
         otpExpiresAt: otpExpiresAt,
     }).then(() => {
-          new Worker("./src/controllers/sendOtpEmail.ts", {
-            workerData: { email: email, otp: otp },
+          new Worker("./src/controllers/sendEmail.ts", { 
+            workerData: { email: email, otp: otp, template: "emailTemplate/otp.html", subject: "One Time Password (OTP)" },
           });
           return res.status(200).json({
             status: true,
+            email: email,
             message: "email sent successfully",
           });
         })
