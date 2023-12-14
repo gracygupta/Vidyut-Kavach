@@ -13,8 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendOTP = void 0;
-const worker_threads_1 = require("worker_threads");
 const otp_1 = __importDefault(require("../models/otp"));
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const handlebars_1 = __importDefault(require("handlebars"));
+const fs_1 = __importDefault(require("fs"));
+const transporter = nodemailer_1.default.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+    },
+});
 function generateOtp() {
     // Generate a random 4-digit number
     const otp = Math.floor(1000 + Math.random() * 9000);
@@ -29,9 +40,26 @@ const sendOTP = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             empID: req.body.user.empID,
             otp: otp,
             otpExpiresAt: otpExpiresAt,
-        }).then(() => {
-            new worker_threads_1.Worker("./src/controllers/sendEmail.ts", {
-                workerData: { email: email, otp: otp, template: "emailTemplate/otp.html", subject: "One Time Password (OTP)" },
+        })
+            .then(() => {
+            const templatePath = path.join(__dirname, "otp.html");
+            console.log(templatePath);
+            // Compile the Handlebars template
+            const source = fs_1.default.readFileSync(templatePath, "utf8");
+            const template = handlebars_1.default.compile(source);
+            const variables = {
+                otp: otp,
+            };
+            // Generate the HTML content using the variables and template
+            const html = template(variables);
+            var mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: "One Time Password (OTP)",
+                html: html,
+            };
+            transporter.sendMail(mailOptions, function (error, info) {
+                console.log("Email sent" + info.response);
             });
             return res.status(200).json({
                 status: true,
