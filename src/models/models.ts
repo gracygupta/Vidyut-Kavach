@@ -19,6 +19,7 @@ const modelSchema = new Schema<Model>(
     modelID: {
       type: String,
       required: true,
+      unique: true
     },
     company_name: {
       type: String,

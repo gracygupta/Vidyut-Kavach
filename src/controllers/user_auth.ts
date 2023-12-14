@@ -85,7 +85,7 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
             roleName = role.name;
           }
         const token = jwt.sign(
-          { email: user.email, empID: user.empID, _id: user._id },
+          { email: user.email, empID: user.empID, _id: user._id, role: roleName },
           SECRET_KEY
         );
 

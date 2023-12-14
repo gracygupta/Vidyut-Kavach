@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Privilege from "../models/privileges";
 import Role from "../models/roles";
-import {encrypt, decrypt} from "../middlewares/aes_encryption"
 
 const add_privilege = async (req: Request, res: Response) => {
   try {
@@ -66,27 +65,22 @@ const add_role = async (req: Request, res: Response) => {
 const get_roles = async (req: Request, res: Response) => {
   try {
     const data = await Role.find();
-    console.log(data);
-    const response = encrypt({
+    return res.status(200).json({
       success: true,
       data: data,
-    })
-    console.log(decrypt(response));
-    return res.status(200).json(response);
+    });
   } catch (err) {
-    const response = encrypt({
+    console.log(err);
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error",
-    })
-    console.log(response);
-    return res.status(500).json(response);
+    });
   }
 };
 
 const get_privileges = async (req: Request, res: Response) => {
   try {
     const data = await Privilege.find();
-    encrypt
     return res.status(200).json({
       success: true,
       data: data,

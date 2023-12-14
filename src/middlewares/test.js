@@ -1,33 +1,35 @@
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
-import dotenv from 'dotenv';
+// Battery:
+// Capacity - 100 kWh
+// Effciency - 95%
+// Chemistry Type - Lithium-ion
+// Nominal Voltage - 48V
+// Depth of Discharge (DoD) - 80%
 
-dotenv.config();
+// Solar Panel:
+// Capacity -  300 W
+// Effciency - 18%
+// Type of Solar Cells - Monocrystalline
+// Nominal Power - 300W
+// Degradation Rate - 0.5% per year
 
-let secretKey = process.env.SECRET_KEY? process.env.SECRET_KEY : 'vidyut' ;
+// Wind Turbine:
+// Capacity: 2 MW
+// Efficiency: 25%
+// Rotor Diameter: 30 meters
+// Rated Power Output: 2 MW
+// Cut-in Wind Speed: 3 m/s
 
-// Example AES encryption and decryption functions
-const ENCRYPTION_KEY = scryptSync(secretKey, 'salt', 32);
-const IV = randomBytes(16);
+// Diesel Generator:
+// Capacity - 100 kW 
+// Effciency - 35%
+// Rated Power Output - 100 kW
+// Fuel Consumption Rate - 10 Litres/hour
+// Engine Type - Four-stroke, turbocharged
 
-data = {
-  success: true,
-  data: "data",
-}
+// Inverter:
+// Capacity -  10 kW
+// Effciency - 98%
+// Input Voltage Range - 200V-600V
+// Output Voltage - 240V
+// Output Frequency - 60 Hz
 
-function encrypt(data) {
-  const text = JSON.stringify(data);
-  const cipher = createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), IV);
-  let encrypted = cipher.update(text, 'utf-8', 'hex');
-  encrypted += cipher.final('hex');
-  console.log("Encrypted:", encrypted);
-  decrypt("Decrypted:", encrypted)
-}
-
-function decrypt(encryptedText) {
-  const decipher = createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), IV);
-  let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
-  decrypted += decipher.final('utf-8');
-  console.log(decrypted)
-}
-
-encrypt(data);

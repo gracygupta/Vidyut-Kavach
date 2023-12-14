@@ -40,6 +40,6 @@ const hardwareUpdateSchema = new Schema<HardwareUpdate>({
     }
 }, { timestamps: true })
 
-const HardwareUpdate = model<HardwareUpdate>('hardware',hardwareUpdateSchema);
+const HardwareUpdate = model<HardwareUpdate>('hardware_updates',hardwareUpdateSchema);
 
 export default HardwareUpdate;
