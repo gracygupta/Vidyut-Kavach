@@ -27,19 +27,12 @@ const nanogridSchema = new Schema<Nanogrid>(
     name: {
       type: String,
       reuired: true,
+      unique: true
     },
-    components: [
-      {
-        type: {
-          type: String,
-          required: true,
-        },
-        componentID: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    components: {
+      type: [{ type: String }], 
+      default: [],
+    },
   },
   { timestamps: true }
 );

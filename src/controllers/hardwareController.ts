@@ -62,6 +62,7 @@ const add_hardware = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: "hardware added successfully",
+      data: newHardware,
     });
   } catch (err) {
     console.error(err);
@@ -75,15 +76,16 @@ const add_hardware = async (req: Request, res: Response) => {
 const get_hardwares = async (req: Request, res: Response) => {
   try {
     const data = await Hardware.find();
-    if (data) {
+    if (data.length != 0) {
       res.status(200).json({
         success: true,
         data: data,
       });
     } else {
-      res.status(500).json({
+      res.status(200).json({
         success: false,
-        message: "some error occured",
+        message: "no updates",
+        data: []
       });
     }
   } catch (err) {
@@ -116,6 +118,7 @@ const add_model = async (req: Request, res: Response) => {
             return res.status(200).json({
               success: true,
               message: "model created successfully",
+              data: data ?? {},
             });
           })
           .catch((err) => {
@@ -138,44 +141,40 @@ const add_model = async (req: Request, res: Response) => {
 
 const update_model = async (req: Request, res: Response) => {
   try {
-    const { modelID, latest_version } = req.body;
-    const existingModel = await Model.findOne({modelID: modelID});
-    if(!existingModel){
-        return res.status(400).json({
-            success: false,
-            message: "model does not found",
-          });
-    }
-    await Model.updateOne(
-      { modelID: modelID },
-      { latest_version: latest_version }
-    )
-      .then(async (data) => {
-          const hardwares = await Hardware.find({
-            modelID: modelID,
-            installed_version: { $ne: latest_version },
-          });
-          for (let i = 0; i < hardwares.length; i++) {
-            await HardwareUpdate.create({
-              modelID: modelID,
-              hardwareID: hardwares[i].hardwareID,
-              latest_version: latest_version,
-              installed_version: hardwares[i].installed_version,
-            }).then((data) => {
-              return res.status(200).json({
-                success: true,
-                message: "model updated successfully",
-              });
-            });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        return res.status(500).json({
-          success: false,
-          message: "some error occured",
-        });
+    const { model_name, company_name, latest_version } = req.body;
+
+    const existingModel = await Model.findOne({ $or:[{model_name: model_name}, {company_name: company_name}] });
+
+    if (!existingModel) {
+      return res.status(400).json({
+        success: false,
+        message: "Model not found",
       });
+    }
+
+    existingModel.latest_version = latest_version;
+    await existingModel.save();
+
+    const hardwares = await Hardware.find({
+      modelID: existingModel.modelID,
+      installed_version: { $ne: latest_version },
+    });
+
+    for (let i = 0; i < hardwares.length; i++) {
+      await HardwareUpdate.create({
+        modelID: existingModel.modelID,
+        hardwareID: hardwares[i].hardwareID,
+        latest_version: latest_version,
+        installed_version: hardwares[i].installed_version,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Model updated successfully",
+      data: existingModel ?? {},
+    });
+
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -188,15 +187,16 @@ const update_model = async (req: Request, res: Response) => {
 const get_models = async (req: Request, res: Response) => {
   try {
     const data = await Model.find();
-    if (data) {
+    if (data.length != 0) {
       res.status(200).json({
         success: true,
         data: data,
       });
     } else {
-      res.status(500).json({
+      res.status(200).json({
         success: false,
-        message: "some error occured",
+        message: "no updates",
+        data: []
       });
     }
   } catch (err) {
@@ -211,15 +211,16 @@ const get_models = async (req: Request, res: Response) => {
 const get_updates = async (req: Request, res: Response) => {
   try {
     const data = await HardwareUpdate.find({ status: "no" });
-    if (data) {
+    if (data.length != 0) {
       res.status(200).json({
         success: true,
         data: data,
       });
     } else {
-      res.status(500).json({
+      res.status(200).json({
         success: false,
-        message: "some error occured",
+        message: "no updates",
+        data: []
       });
     }
   } catch (err) {
@@ -234,25 +235,33 @@ const get_updates = async (req: Request, res: Response) => {
 const mark_updates = async (req: Request, res: Response) => {
   try {
     const { hardwareID } = req.body;
-    await HardwareUpdate.updateOne(
+    const existingHardware = await Hardware.findOne({ hardwareID: hardwareID });
+
+    if (!existingHardware) {
+      return res.status(400).json({
+        success: false,
+        message: "hardware does not exist",
+      });
+    }
+
+    // Update the hardware
+    const markedHardware = await HardwareUpdate.findOneAndUpdate(
       { hardwareID: hardwareID },
       { status: "yes" }
-    )
-      .then((data) => {
-        res.status(200).json({
-          success: true,
-          message: "hardware update marked done",
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json({
-          success: false,
-          message: "some error occured",
-        });
-      });
+    );
+
+    const updatedHardware = await Hardware.findOneAndUpdate(
+      { hardwareID: hardwareID },
+      { installed_version: markedHardware?.latest_version }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Hardware update marked done",
+      data: updatedHardware ?? {},
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",

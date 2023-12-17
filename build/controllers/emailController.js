@@ -17,6 +17,7 @@ const otp_1 = __importDefault(require("../models/otp"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const handlebars_1 = __importDefault(require("handlebars"));
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -42,8 +43,7 @@ const sendOTP = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             otpExpiresAt: otpExpiresAt,
         })
             .then(() => {
-            const templatePath = path.join(__dirname, "otp.html");
-            console.log(templatePath);
+            const templatePath = path_1.default.join(__dirname, "emailTemplate/otp.html");
             // Compile the Handlebars template
             const source = fs_1.default.readFileSync(templatePath, "utf8");
             const template = handlebars_1.default.compile(source);
@@ -59,12 +59,21 @@ const sendOTP = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                 html: html,
             };
             transporter.sendMail(mailOptions, function (error, info) {
-                console.log("Email sent" + info.response);
-            });
-            return res.status(200).json({
-                status: true,
-                email: email,
-                message: "email sent successfully",
+                if (!error) {
+                    console.log("Email sent" + info.response);
+                    return res.status(200).json({
+                        status: true,
+                        email: email,
+                        message: "email sent successfully",
+                    });
+                }
+                else {
+                    console.log(error);
+                    return res.status(500).json({
+                        status: false,
+                        message: "some error occured",
+                    });
+                }
             });
         })
             .catch((err) => {

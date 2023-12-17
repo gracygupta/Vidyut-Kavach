@@ -96,7 +96,7 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 if (role && role.name) {
                     roleName = role.name;
                 }
-                const token = jsonwebtoken_1.default.sign({ email: user.email, empID: user.empID, _id: user._id }, SECRET_KEY);
+                const token = jsonwebtoken_1.default.sign({ email: user.email, empID: user.empID, _id: user._id, role: roleName }, SECRET_KEY);
                 return res.status(200).json({
                     success: true,
                     token,

@@ -2,12 +2,12 @@ import { Schema, model, Document, ObjectId } from "mongoose";
 
 export interface TypeDocument extends Document {
   name: string;
-  source_type: "input" | "output";
+  source_type: "input" | "output" | "storage";
 }
 
 interface Type {
   name: string;
-  source_type: "input" | "output";
+  source_type: "input" | "output" | "storage";
 }
 
 const typeSchema = new Schema<Type>(
@@ -20,7 +20,7 @@ const typeSchema = new Schema<Type>(
     source_type: {
       type: String,
       required: true,
-      enum: ["input", "output"],
+      enum: ["input", "output", "storage"],
     },
   },
   { timestamps: true }

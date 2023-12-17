@@ -1,0 +1,36 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const hardware = express_1.default.Router();
+const express_validator_1 = require("express-validator");
+const reqValidator_1 = require("../middlewares/reqValidator");
+const hardwareController_1 = require("../controllers/hardwareController");
+hardware.post("/add_hardware", [
+    (0, express_validator_1.body)("hardwareID", "hardware id is required").exists(),
+    (0, express_validator_1.body)("componentID", "component id is required").exists(),
+    (0, express_validator_1.body)("name", "name is required").exists(),
+    (0, express_validator_1.body)("type", "name is required").exists(),
+    (0, express_validator_1.body)("manufacturer", "manufacturer is required").exists(),
+    (0, express_validator_1.body)("manufacture_date", "manufacture_date is required").exists(),
+    (0, express_validator_1.body)("modelID", "model id is required").exists(),
+    (0, express_validator_1.body)("installation_date", "installation_date is required").exists(),
+    (0, express_validator_1.body)("installed_version", "installed_version is required").exists(),
+], reqValidator_1.validateRequest, hardwareController_1.add_hardware);
+hardware.get("/get_all_hardwares", hardwareController_1.get_hardwares);
+hardware.post("/add_model", [
+    (0, express_validator_1.body)("modelID", "model id is required").exists().isString(),
+    (0, express_validator_1.body)("company_name", "company name is required").exists().isString(),
+    (0, express_validator_1.body)("model_name", "model name is required").exists().isString(),
+    (0, express_validator_1.body)("latest_version", "latest version is required").exists().isString(),
+], reqValidator_1.validateRequest, hardwareController_1.add_model);
+hardware.post("/update_model", [
+    (0, express_validator_1.body)("modelID", "model id is required").exists().isString(),
+    (0, express_validator_1.body)("latest_version", "latest version is required").exists().isString(),
+], reqValidator_1.validateRequest, hardwareController_1.update_model);
+hardware.get("/get_all_models", hardwareController_1.get_models);
+hardware.get("/get_updates", hardwareController_1.get_updates);
+hardware.post("/mark_updates", [(0, express_validator_1.body)("hardwareID", "hardware id is required").exists()], reqValidator_1.validateRequest, hardwareController_1.mark_updates);
+exports.default = hardware;

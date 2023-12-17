@@ -24,5 +24,5 @@ const hardwareUpdateSchema = new mongoose_1.Schema({
         default: 'no'
     }
 }, { timestamps: true });
-const HardwareUpdate = (0, mongoose_1.model)('hardware', hardwareUpdateSchema);
+const HardwareUpdate = (0, mongoose_1.model)('hardware_updates', hardwareUpdateSchema);
 exports.default = HardwareUpdate;

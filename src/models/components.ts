@@ -20,8 +20,8 @@ interface Component {
   componentID: string;
   name: string;
   type: ObjectId;
-  latitude: Schema.Types.Decimal128;
-  longitude: Schema.Types.Decimal128;
+  latitude: number;
+  longitude: number;
   capacity: number;
   properties: Property;
 }
@@ -42,10 +42,13 @@ const componentSchema = new Schema<Component>(
       required: true,
     },
     latitude: {
-      type: Schema.Types.Decimal128,
+      type: Number,
     },
     longitude: {
-      type: Schema.Types.Decimal128,
+      type: Number,
+    },
+    capacity: {
+      type: Number,
     },
     properties: {
       type: Map,

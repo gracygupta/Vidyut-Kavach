@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.add_role = exports.get_privileges = exports.get_roles = exports.add_privilege = void 0;
 const privileges_1 = __importDefault(require("../models/privileges"));
 const roles_1 = __importDefault(require("../models/roles"));
-const aes_encryption_1 = require("../middlewares/aes_encryption");
 const add_privilege = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const name = req.body.name;
@@ -81,28 +80,23 @@ exports.add_role = add_role;
 const get_roles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield roles_1.default.find();
-        console.log(data);
-        const response = (0, aes_encryption_1.encrypt)({
+        return res.status(200).json({
             success: true,
             data: data,
         });
-        console.log((0, aes_encryption_1.decrypt)(response));
-        return res.status(200).json(response);
     }
     catch (err) {
-        const response = (0, aes_encryption_1.encrypt)({
+        console.log(err);
+        return res.status(500).json({
             success: false,
             message: "Internal Server Error",
         });
-        console.log(response);
-        return res.status(500).json(response);
     }
 });
 exports.get_roles = get_roles;
 const get_privileges = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield privileges_1.default.find();
-        aes_encryption_1.encrypt;
         return res.status(200).json({
             success: true,
             data: data,

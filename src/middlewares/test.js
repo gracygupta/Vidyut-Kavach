@@ -20,7 +20,7 @@
 // Cut-in Wind Speed: 3 m/s
 
 // Diesel Generator:
-// Capacity - 100 kW 
+// Capacity - 100 kW
 // Effciency - 35%
 // Rated Power Output - 100 kW
 // Fuel Consumption Rate - 10 Litres/hour
@@ -33,3 +33,12 @@
 // Output Voltage - 240V
 // Output Frequency - 60 Hz
 
+const currentDate = new Date();
+const startDateHourly = new Date(currentDate);
+startDateHourly.setHours(startDateHourly.getHours()+5, 0+30, 0, 0);
+const endDateHourly = new Date(startDateHourly);
+endDateHourly.setHours(endDateHourly.getHours() + 1);
+
+console.log("currentDate: ", currentDate);
+console.log("startDate: ", startDateHourly);
+console.log("endDate: ", endDateHourly);

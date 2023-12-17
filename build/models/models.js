@@ -5,6 +5,7 @@ const modelSchema = new mongoose_1.Schema({
     modelID: {
         type: String,
         required: true,
+        unique: true
     },
     company_name: {
         type: String,
