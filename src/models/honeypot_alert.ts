@@ -1,7 +1,7 @@
 import {Schema, model, Document, ObjectId} from 'mongoose';
 
 export interface HoneypotAlertDocument extends Document{
-    aleart_id: number,
+    alert_id: number,
     read: boolean,
     type: string,
     severity: "Critical" | "High" | "Medium" | "Low",
@@ -12,11 +12,10 @@ export interface HoneypotAlertDocument extends Document{
     action: "blocked" | "on-surviellance",
     honeypot_id: string,
     honeypot_name: string,
-    timestamp: Date
 }
 
 interface HoneypotAlert {
-    aleart_id: number,
+    alert_id: number,
     read: boolean,
     type: string,
     severity: "Critical" | "High" | "Medium" | "Low",
@@ -27,11 +26,10 @@ interface HoneypotAlert {
     action: "blocked" | "on-surviellance",
     honeypot_id: string,
     honeypot_name: string,
-    timestamp: Date
 }
 
 const honeypotAlertSchema = new Schema<HoneypotAlert>({
-    aleart_id: {
+    alert_id: {
         type: Number,
         required: true
     },
@@ -71,10 +69,6 @@ const honeypotAlertSchema = new Schema<HoneypotAlert>({
     honeypot_name: {
         type: String
     },
-    timestamp: {
-        type: Date,
-        default: Date.now()
-    }
 },{ timestamps: true })
 
 const HoneypotAlert = model<HoneypotAlert>('honeypot_alerts', honeypotAlertSchema);

@@ -7,15 +7,15 @@ import IDS from "../models/ids";
 
 const add_security_alert = async (req: Request, res: Response) => {
   try {
-    const { type, severity, attacker_ip, action, description, timestamp } =
+    const { alert_id, type, severity, attacker_ip, action, description, timestamp } =
       req.body;
     await SecurityAlert.create({
+      alert_id: alert_id,
       type: type,
       severity: severity,
       attacker_ip: attacker_ip,
       action: action,
-      description: description,
-      timestamp: timestamp,
+      description: description
     })
       .then((data) => {
         if (data) {
@@ -46,6 +46,7 @@ const add_security_alert = async (req: Request, res: Response) => {
 const add_honeypot_alert = async (req: Request, res: Response) => {
   try {
     const {
+      alert_id,
       type,
       severity,
       attacker_ip,
@@ -58,6 +59,7 @@ const add_honeypot_alert = async (req: Request, res: Response) => {
       timestamp,
     } = req.body;
     await HoneypotAlert.create({
+      alert_id: alert_id,
       type: type,
       severity: severity,
       attacker_ip: attacker_ip,
@@ -66,8 +68,7 @@ const add_honeypot_alert = async (req: Request, res: Response) => {
       protocol: protocol,
       action: action,
       honeypot_id: honeypot_id,
-      honeypot_name: honeypot_name,
-      timestamp: timestamp,
+      honeypot_name: honeypot_name
     })
       .then((data) => {
         if (data) {
@@ -97,54 +98,55 @@ const add_honeypot_alert = async (req: Request, res: Response) => {
 
 const latest_24_hours = async (req: Request, res: Response) => {
   try {
-    const endTime = new Date();
-    const startTime = moment(endTime).subtract(24, "hours").toDate();
-    console.log(startTime, " ", endTime);
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const totalSecurityAlerts = await SecurityAlert.countDocuments({
+      createdAt: { $gte: yesterday },
+    });
+    const totalHoneypotAlerts = await HoneypotAlert.countDocuments({
+      createdAt: { $gte: yesterday },
+    });
 
-    // Aggregate pipeline for Security Alerts
-    const securityAlertPipeline = [
-      {
-        $match: {
-          timestamp: {
-            $gte: startTime,
-            $lte: endTime,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$action",
-          totalSecurityAlerts: { $sum: 1 },
-        },
-      },
-    ];
+const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
 
-    // Aggregate pipeline for Honeypot Alerts
-    const honeypotAlertPipeline = [
-      {
-        $match: {
-          timestamp: {
-            $gte: startTime,
-            $lte: endTime,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$action",
-          totalHoneypotAlerts: { $sum: 1 },
-        },
-      },
-    ];
+const securityAction = await SecurityAlert.aggregate([
+  {
+    $match: {
+      action: { $in: ['blocked', 'on-surviellance'] },
+      createdAt: { $gte: twentyFourHoursAgo }
+    }
+  },
+  {
+    $group: {
+      _id: '$action',
+      count: { $sum: 1 }
+    }
+  }
+]);
 
-    const security_alert = await SecurityAlert.aggregate(securityAlertPipeline);
-    const honeypot_alert = await HoneypotAlert.aggregate(honeypotAlertPipeline);
-    console.log(security_alert);
-    console.log(honeypot_alert);
+const honeypotAction = await HoneypotAlert.aggregate([
+  {
+    $match: {
+      action: { $in: ['blocked', 'on-surviellance'] },
+      createdAt: { $gte: twentyFourHoursAgo }
+    }
+  },
+  {
+    $group: {
+      _id: '$action',
+      count: { $sum: 1 }
+    }
+  }
+]);
+
+
+
     return res.status(200).json({
       success: true,
-      security_alert,
-      honeypot_alert,
+      totalSecurityAlerts,
+      totalHoneypotAlerts,
+      securityAction,
+      honeypotAction
     });
   } catch (err) {
     console.log(err);
@@ -166,6 +168,7 @@ const get_security_logs = async (req: Request, res: Response) => {
     } else if (req.params.logs == "month") {
       time = moment(currentTime).subtract(30, "days").toDate();
     }
+    console.log(time);
     // Aggregate pipeline for fetching security logs
     const pipeline = [
       {
@@ -375,15 +378,15 @@ const add_ids = async (req: Request, res: Response) => {
 };
 
 const get_ids_status = async (req: Request, res: Response) => {
-    try {
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-      });
-    }
-  };
+  try {
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 
 export {
   add_security_alert,

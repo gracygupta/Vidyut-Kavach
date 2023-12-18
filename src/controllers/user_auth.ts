@@ -12,7 +12,7 @@ const SECRET_KEY = process.env.SECRET_KEY || 'vidyut';
 
 function generateOTP(inputString: string) {
   // Define the letters to count
-  const lettersToCount = ['a', 'e', 'b', 'c'];
+  const lettersToCount = ['1', '2', '6', '7', '5', '9'];
 
   // Initialize an object to store letter counts
   const letterCounts: any = {};
@@ -76,8 +76,9 @@ const signUp = async (req: Request, res: Response) => {
           role: role,
         };
         const updatedqrInfo = JSON.stringify(qrInfo);
-        const encryptedData = encrypt(updatedqrInfo);
-        generateQRCode(encryptedData)
+        console.log(updatedqrInfo);
+        // const encryptedData = encrypt(updatedqrInfo);
+        generateQRCode(updatedqrInfo)
           .then((url) => {
             return res.status(200).json({
               success: true,
@@ -158,8 +159,8 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
 
 
       const data = user?.empID + user?.password+day+month+year+hours+minutes;
-      const update = encrypt(data);
-      const generatedOtp = generateOTP(update);
+      // const update = encrypt(data);
+      const generatedOtp = generateOTP(data);
       console.log("generatedOTP: ",generatedOtp);
       const token = jwt.sign(
         { role: user.role, id: user._id, email: user.email },

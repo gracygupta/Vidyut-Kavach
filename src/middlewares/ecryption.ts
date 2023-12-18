@@ -5,9 +5,7 @@ dotenv.config();
 const secretKey = 'vidyut'; // Your secret key
 
 // Hash the secret key using SHA-256 to create a deterministic key
-const derivedKey = crypto.createHash('sha256').update(secretKey).digest();
-
-
+const derivedKey = Buffer.from('df2322531b43acab18fef92847ae0047fa513198398f70c5f28cb6c6b6308de0', 'hex');
 const encrypt = (data: any): string => {
   const cipher = crypto.createCipheriv('aes-256-cbc', derivedKey, Buffer.alloc(16));
   let encryptedData = cipher.update(data, 'utf8', 'hex');

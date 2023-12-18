@@ -15,12 +15,12 @@ import { validateRequest } from "../middlewares/reqValidator";
 alert.post(
   "/add_security_alert",
   [
+    body("alert_id", "alert id is required").exists(),
     body("type", "security type is required").exists(),
     body("severity", "severity is required").exists(),
     body("attacker_ip", "attacker_ip is required").exists(),
     body("action", "action is required").exists(),
-    body("description", "description is required").exists(),
-    body("timestamp", "timestamp is required").exists(),
+    body("description", "description is required").exists()
   ],
   validateRequest,
   add_security_alert
@@ -37,8 +37,7 @@ alert.post(
     body("protocol", "protocol is required").exists(),
     body("action", "action is required").exists(),
     body("honeypot_id", "honeypot_id is required").exists(),
-    body("honeypot_name", "honeypot_name is required").exists(),
-    body("timestamp", "timestamp is required").exists(),
+    body("honeypot_name", "honeypot_name is required").exists()
   ],
   validateRequest,
   add_honeypot_alert

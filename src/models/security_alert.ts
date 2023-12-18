@@ -1,29 +1,27 @@
 import {Schema, model, Document, ObjectId} from 'mongoose';
 
 export interface SecurityAlertDocument extends Document{
-    aleart_id: number,
+    alert_id: number,
     read: boolean,
     type: string,
     severity: "Critical" | "High" | "Medium" | "Low",
     attacker_ip : string,
     action: "blocked" | "on-surviellance",
     description: string,
-    timestamp: Date
 }
 
 interface SecurityAlert {
-    aleart_id: number,
+    alert_id: number,
     read: boolean,
     type: string,
     severity: "Critical" | "High" | "Medium" | "Low",
     attacker_ip : string,
     action: "blocked" | "on-surviellance",
     description: string,
-    timestamp: Date
 }
 
 const securityAlertSchema = new Schema<SecurityAlert>({
-    aleart_id: {
+    alert_id: {
         type: Number,
         required: true
     },
@@ -49,10 +47,6 @@ const securityAlertSchema = new Schema<SecurityAlert>({
     description: {
         type: String,
         default: ""
-    },
-    timestamp: {
-        type: Date,
-        default: Date.now()
     }
 },{ timestamps: true })
 
