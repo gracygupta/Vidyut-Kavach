@@ -1,113 +1,207 @@
-import User from '../models/user';
-import Role from '../models/roles';
-import bcrypt from 'bcryptjs';
-import {Request, Response, NextFunction} from 'express';
-import Otp from '../models/otp';
-import jwt from 'jsonwebtoken';
+import User from "../models/user";
+import Role from "../models/roles";
+import bcrypt from "bcryptjs";
+import { Request, Response, NextFunction } from "express";
+// import Otp from "../models/otp";
+import jwt from "jsonwebtoken";
+import * as QRCode from "qrcode";
+import AccessLog from "../models/access_logs";
+import { encrypt, decrypt } from "../middlewares/ecryption";
 
-const SECRET_KEY = process.env.SECRET_KEY? process.env.SECRET_KEY: 'vidyut';
+const SECRET_KEY = process.env.SECRET_KEY || 'vidyut';
 
-const signUp = async (req:Request, res:Response) =>{
-    try{
-        const {empID, username, email, role, password} = req.body;
-        const about = req.body.about || "";
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({
-            empID : empID,
-            username: username,
-            email: email,
-            about: about,
-            role: role,
-            password: hashedPassword
-        }).then(data=>{
-            return res.status(200).json({
-                success: true,
-                message: "user created successfully"
-            })
-        }).catch(err=>{
-            console.log(err);
-            return res.status(500).json({
-                success: false,
-                message:"some error occured"
-            })
-        })
+function generateOTP(inputString: string) {
+  // Define the letters to count
+  const lettersToCount = ['a', 'e', 'b', 'c'];
+
+  // Initialize an object to store letter counts
+  const letterCounts: any = {};
+
+  // Iterate through the inputString and count the letters
+  for (const letter of inputString) {
+    if (lettersToCount.includes(letter)) {
+      letterCounts[letter] = (letterCounts[letter] || 0) + 1;
     }
-    catch(err){
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message:"Internal Server Error"
-        })
-    }
+  }
+
+  let otp = '';
+
+  for (const letter of lettersToCount) {
+    const count = letterCounts[letter] || 0;
+    otp +=  (count % 10).toString();
+
+  }
+
+  return otp;
 }
 
-const verifyCredentials = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-        const {empID, password} = req.body;
-        const user = await User.findOne({empID: empID});
-        if(!user) return res.status(500).json({
-            success: false,
-            message: "invalid credentials"
-        });
-        // if(!user.isVerified) return res.status(500).json({
-        //     success: false,
-        //     message: "email not verified"
-        // });
-        const matchPassword = await bcrypt.compare(password, user.password);
-        if(!matchPassword) return res.status(500).json({
-            success: false,
-            message: "invalid credentials"
-        });
-        req.body.user = user;
-        next();
-    }
-    catch(err){
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message:"Internal Server Error"
-        })
-    }
-}
-
-const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { empID, otp } = req.body;
-
-    const otpData = await Otp.findOne({ empID }).sort({ _id: -1 });
-    if (otpData && otp === otpData.otp && otpData.otpExpiresAt >= new Date()) {
-      const user = await User.findOne({ empID });
-
-      if (user) {
-        var role = await Role.findById(user.role);
-        var roleName;
-        if (role && role.name) {
-            roleName = role.name;
-          }
-        const token = jwt.sign(
-          { email: user.email, empID: user.empID, _id: user._id, role: roleName },
-          SECRET_KEY
-        );
-
-        return res.status(200).json({
-          success: true,
-          token,
-          role: roleName,
-        });
+function generateQRCode(data: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    QRCode.toDataURL(data, (err, url) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(url);
       }
-    } else {
-      return res.status(500).json({
+    });
+  });
+}
+
+const signUp = async (req: Request, res: Response) => {
+  try {
+    const { empID, username, email, role, password } = req.body;
+    const about = req.body.about || "";
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const roleID = await Role.findOne({ name: role });
+    if (!roleID) {
+      return res.status(400).json({
         success: false,
-        message: "Incorrect OTP or expired",
+        message: "role does not exist",
       });
     }
+    await User.create({
+      empID: empID,
+      username: username,
+      email: email,
+      about: about,
+      role: roleID?._id,
+      password: hashedPassword,
+    })
+      .then((data) => {
+        let qrInfo = {
+          empID: empID,
+          id: data._id,
+          key: data.empID + hashedPassword,
+          username: username,
+          role: role,
+        };
+        const updatedqrInfo = JSON.stringify(qrInfo);
+        const encryptedData = encrypt(updatedqrInfo);
+        generateQRCode(encryptedData)
+          .then((url) => {
+            return res.status(200).json({
+              success: true,
+              message: "user created successfully",
+              data: url,
+            });
+          })
+          .catch((error) => {
+            console.error("Error generating QR Code:", error);
+            return res.status(400).json({
+              success: false,
+              message: "some error occured",
+            });
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json({
+          success: false,
+          message: "some error occured",
+        });
+      });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
+    console.log(err);
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });
   }
 };
+
+const verifyCredentials = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { empID, password } = req.body;
+    const user = await User.findOne({ empID: empID });
+    if (!user)
+      return res.status(500).json({
+        success: false,
+        message: "invalid credentials",
+      });
+    const matchPassword = await bcrypt.compare(password, user.password);
+    if (!matchPassword)
+      return res.status(500).json({
+        success: false,
+        message: "invalid credentials",
+      });
+    else {
+      return res.status(200).json({
+        success: true,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    var { empID, otp } = req.body;
+    otp = parseInt(otp);
+    const user = await User.findOne({ empID: empID });
+    if (user) {
+
+      const currentDate = new Date();
+      const day = currentDate.getDate(); // Day of the month (1-31)
+      const month = currentDate.getMonth() + 1; // Month (0-11, so we add 1 to make it 1-12)
+      const year = currentDate.getFullYear(); // Year (e.g., 2023)
+      const hours = currentDate.getHours(); // Hours (0-23)
+      const minutes = currentDate.getMinutes();
+
+
+      const data = user?.empID + user?.password+day+month+year+hours+minutes;
+      const update = encrypt(data);
+      const generatedOtp = generateOTP(update);
+      console.log("generatedOTP: ",generatedOtp);
+      const token = jwt.sign(
+        { role: user.role, id: user._id, email: user.email },
+        SECRET_KEY
+      );
+      const role = await Role.findOne({_id: user.role});
+      if (otp == generatedOtp) {
+        await AccessLog.create({
+          empID: user.empID,
+          role: role?.name,
+          ip: req.ip,
+          login: true,
+          timestamp: new Date().toISOString()
+        });
+        return res.status(200).json({
+          success: true,
+          role: user.role,
+          username: user.username,
+          token: token
+        });
+      } else {
+        await AccessLog.create({
+          empID: user.empID,
+          role: role?.name,
+          ip: req.ip,
+          login: false,
+          timestamp: new Date().toISOString()
+        });
+        return res.status(400).json({
+          success: false,
+          message: "incorrect OTP",
+        });
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 export { signUp, verifyCredentials, verifyOtp };

@@ -15,8 +15,7 @@ user.post(
     body("password", "password is required").exists().isString(),
   ],
   validateRequest,
-  verifyCredentials,
-  sendOTP
+  verifyCredentials
 );
 
 // @route   POST /verify_otp

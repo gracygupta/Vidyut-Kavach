@@ -27,10 +27,12 @@ hardware.post("/add_model", [
     (0, express_validator_1.body)("latest_version", "latest version is required").exists().isString(),
 ], reqValidator_1.validateRequest, hardwareController_1.add_model);
 hardware.post("/update_model", [
-    (0, express_validator_1.body)("modelID", "model id is required").exists().isString(),
+    (0, express_validator_1.body)("company_name", "company name is required").exists().isString(),
+    (0, express_validator_1.body)("model_name", "model name is required").exists().isString(),
     (0, express_validator_1.body)("latest_version", "latest version is required").exists().isString(),
 ], reqValidator_1.validateRequest, hardwareController_1.update_model);
 hardware.get("/get_all_models", hardwareController_1.get_models);
 hardware.get("/get_updates", hardwareController_1.get_updates);
 hardware.post("/mark_updates", [(0, express_validator_1.body)("hardwareID", "hardware id is required").exists()], reqValidator_1.validateRequest, hardwareController_1.mark_updates);
+hardware.get("/get_hardware_details", hardwareController_1.get_hardware_details);
 exports.default = hardware;

@@ -10,6 +10,7 @@ import {
   update_model,
   get_updates,
   mark_updates,
+  get_hardware_details
 } from "../controllers/hardwareController";
 
 hardware.post(
@@ -46,7 +47,8 @@ hardware.post(
 hardware.post(
   "/update_model",
   [
-    body("modelID", "model id is required").exists().isString(),
+    body("company_name", "company name is required").exists().isString(),
+    body("model_name", "model name is required").exists().isString(),
     body("latest_version", "latest version is required").exists().isString(),
   ],
   validateRequest,
@@ -64,4 +66,5 @@ hardware.post(
   mark_updates
 );
 
+hardware.get("/get_hardware_details", get_hardware_details)
 export default hardware;

@@ -64,8 +64,7 @@ admin.post(
       .custom(isEmailUnique),
     body("role", "Role is not specified.")
       .exists()
-      .isString()
-      .custom(isCorrectRole),
+      .isString(),
     body("password", "Password should be at least 2 characters.")
       .exists()
       .isLength({ min: 6 }),
