@@ -1,6 +1,5 @@
 import { Request as ExpressRequest, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/user';
 
 // Define a custom Request type
 interface CustomRequest extends ExpressRequest {
@@ -9,7 +8,7 @@ interface CustomRequest extends ExpressRequest {
 
 const SECRET_KEY = process.env.SECRET_KEY ? process.env.SECRET_KEY : 'vidyut';
 
-const checkToken = async(req: CustomRequest, res: Response, next: NextFunction) => {
+const checkToken = (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.token as string;
 
@@ -33,9 +32,9 @@ const checkToken = async(req: CustomRequest, res: Response, next: NextFunction) 
     }
 };
 
-const check_admin = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+const check_admin = (req: CustomRequest, res: Response, next: NextFunction)=>{
     try{
-        const role = req.body.user.id;
+        const role = req.body.user.role;
         if (role == "admin"){
             next()
         }
@@ -57,7 +56,7 @@ const check_admin = async(req: CustomRequest, res: Response, next: NextFunction)
 const check_security_analyst = (req: CustomRequest, res: Response, next: NextFunction)=>{
     try{
         const role = req.body.user.role;
-        if (role == "security analyst" || role == "admin"){
+        if (role == "security analyst" || role =="admin"){
             next()
         }
         return res.status(400).json({
@@ -73,6 +72,7 @@ const check_security_analyst = (req: CustomRequest, res: Response, next: NextFun
         })
     }
 }
+
 
 const check_maintenance_technical = (req: CustomRequest, res: Response, next: NextFunction)=>{
     try{
@@ -113,5 +113,4 @@ const check_system_operator = (req: CustomRequest, res: Response, next: NextFunc
         })
     }
 }
-
-export  {checkToken, check_admin,check_security_analyst,check_maintenance_technical, check_system_operator };
+export  {checkToken, check_admin, check_security_analyst, check_system_operator,check_maintenance_technical};

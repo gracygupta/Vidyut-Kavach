@@ -1,21 +1,12 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.check_system_operator = exports.check_maintenance_technical = exports.check_security_analyst = exports.check_admin = exports.checkToken = void 0;
+exports.check_maintenance_technical = exports.check_system_operator = exports.check_security_analyst = exports.check_admin = exports.checkToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const SECRET_KEY = process.env.SECRET_KEY ? process.env.SECRET_KEY : 'vidyut';
-const checkToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const checkToken = (req, res, next) => {
     try {
         const token = req.headers.token;
         if (token) {
@@ -38,11 +29,11 @@ const checkToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             message: 'Internal Server Error',
         });
     }
-});
+};
 exports.checkToken = checkToken;
-const check_admin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const check_admin = (req, res, next) => {
     try {
-        const role = req.body.user.id;
+        const role = req.body.user.role;
         if (role == "admin") {
             next();
         }
@@ -58,7 +49,7 @@ const check_admin = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             message: "Internal Server Error"
         });
     }
-});
+};
 exports.check_admin = check_admin;
 const check_security_analyst = (req, res, next) => {
     try {
