@@ -179,7 +179,8 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
           success: true,
           role: role?.name,
           username: user.username,
-          token: token
+          token: token,
+          otp: generatedOtp
         });
       } else {
         await AccessLog.create({
