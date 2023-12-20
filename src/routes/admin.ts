@@ -43,7 +43,7 @@ admin.post("/add_role", checkToken, check_admin,[
 // @route   POST /get_role
 // @desc    get all roles
 // @access  Public
-admin.get("/get_roles",checkToken, check_admin, get_roles);
+admin.get("/get_roles", get_roles);
 
 
 // @route   POST /signup
