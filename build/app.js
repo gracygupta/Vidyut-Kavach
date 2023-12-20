@@ -42,3 +42,4 @@ app.use(function (req, res, next) {
 app.listen(PORT, () => {
     console.log(`Server is up at port ${PORT}`);
 });
+console.log(`${new Date(new Date().setDate(new Date().getDate() - 30))}`);

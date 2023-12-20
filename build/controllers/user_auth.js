@@ -37,19 +37,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyOtp = exports.verifyCredentials = exports.signUp = void 0;
 const user_1 = __importDefault(require("../models/user"));
-const crypto_1 = __importDefault(require("crypto"));
 const roles_1 = __importDefault(require("../models/roles"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+// import Otp from "../models/otp";
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const QRCode = __importStar(require("qrcode"));
-const aes_encryption_1 = require("../middlewares/aes_encryption");
-const SECRET_KEY = process.env.SECRET_KEY ? process.env.SECRET_KEY : "vidyut";
+const access_logs_1 = __importDefault(require("../models/access_logs"));
+const SECRET_KEY = process.env.SECRET_KEY || 'vidyut';
 function generateOTP(inputString) {
-    const lowerCaseString = inputString.toLowerCase();
-    const vCount = (lowerCaseString.match(/v/g) || []).length;
-    const iCount = (lowerCaseString.match(/i/g) || []).length;
-    const dCount = (lowerCaseString.match(/d/g) || []).length;
-    const kCount = (lowerCaseString.match(/k/g) || []).length;
-    const otp = vCount + iCount + dCount + kCount;
+    // Define the letters to count
+    const lettersToCount = ['1', '2', '6', '7', '5', '9'];
+    // Initialize an object to store letter counts
+    const letterCounts = {};
+    // Iterate through the inputString and count the letters
+    for (const letter of inputString) {
+        if (lettersToCount.includes(letter)) {
+            letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+        }
+    }
+    let otp = '';
+    for (const letter of lettersToCount) {
+        const count = letterCounts[letter] || 0;
+        otp += (count % 10).toString();
+    }
     return otp;
 }
 function generateQRCode(data) {
@@ -64,13 +74,6 @@ function generateQRCode(data) {
         });
     });
 }
-const create_hash = (data) => {
-    const inputString = data + new Date().toISOString() + new Date().getHours() + new Date().getMinutes();
-    console.log(inputString);
-    const sha1Hash = crypto_1.default.createHash('sha1').update(inputString).digest('hex');
-    console.log("SHA-1 Hash:", sha1Hash);
-    return sha1Hash;
-};
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { empID, username, email, role, password } = req.body;
@@ -88,21 +91,22 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             username: username,
             email: email,
             about: about,
-            role: roleID._id,
+            role: roleID === null || roleID === void 0 ? void 0 : roleID._id,
             password: hashedPassword,
         })
             .then((data) => {
-            const qrInfo = {
+            let qrInfo = {
                 empID: empID,
                 id: data._id,
                 key: data.empID + hashedPassword,
                 username: username,
                 role: role,
             };
-            const encryptedData = (0, aes_encryption_1.encrypt)(qrInfo);
-            generateQRCode(encryptedData)
+            const updatedqrInfo = JSON.stringify(qrInfo);
+            console.log(updatedqrInfo);
+            // const encryptedData = encrypt(updatedqrInfo);
+            generateQRCode(updatedqrInfo)
                 .then((url) => {
-                console.log("QR Code URL:", url);
                 return res.status(200).json({
                     success: true,
                     message: "user created successfully",
@@ -149,8 +153,11 @@ const verifyCredentials = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 success: false,
                 message: "invalid credentials",
             });
-        req.body.user = user;
-        next();
+        else {
+            return res.status(200).json({
+                success: true,
+            });
+        }
     }
     catch (err) {
         console.log(err);
@@ -163,26 +170,48 @@ const verifyCredentials = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.verifyCredentials = verifyCredentials;
 const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { empID, otp } = req.body;
+        var { empID, otp } = req.body;
+        otp = parseInt(otp);
         const user = yield user_1.default.findOne({ empID: empID });
         if (user) {
-            const data = (user === null || user === void 0 ? void 0 : user.empID) + (user === null || user === void 0 ? void 0 : user.password);
-            console.log(data);
-            const hash = create_hash(data);
-            console.log(hash);
-            const generatedOtp = generateOTP(hash);
-            console.log(generatedOtp);
+            const currentDate = new Date();
+            const day = currentDate.getDate(); // Day of the month (1-31)
+            const month = currentDate.getMonth() + 1; // Month (0-11, so we add 1 to make it 1-12)
+            const year = currentDate.getFullYear(); // Year (e.g., 2023)
+            const hours = currentDate.getHours(); // Hours (0-23)
+            const minutes = currentDate.getMinutes();
+            const data = (user === null || user === void 0 ? void 0 : user.empID) + (user === null || user === void 0 ? void 0 : user.password) + day + month + year + hours + minutes;
+            // const update = encrypt(data);
+            const generatedOtp = generateOTP(data);
+            console.log("generatedOTP: ", generatedOtp);
+            const role = yield roles_1.default.findOne({ _id: user.role });
+            const token = jsonwebtoken_1.default.sign({ role: role === null || role === void 0 ? void 0 : role.name, id: user._id, email: user.email }, SECRET_KEY);
             if (otp == generatedOtp) {
+                yield access_logs_1.default.create({
+                    empID: user.empID,
+                    role: role === null || role === void 0 ? void 0 : role.name,
+                    ip: req.ip,
+                    login: true,
+                    timestamp: new Date().toISOString()
+                });
                 return res.status(200).json({
                     success: true,
-                    role: user.role,
+                    role: role === null || role === void 0 ? void 0 : role.name,
                     username: user.username,
+                    token: token
                 });
             }
             else {
+                yield access_logs_1.default.create({
+                    empID: user.empID,
+                    role: role === null || role === void 0 ? void 0 : role.name,
+                    ip: req.ip,
+                    login: false,
+                    timestamp: new Date().toISOString()
+                });
                 return res.status(400).json({
                     success: false,
-                    message: "incorrect OTP"
+                    message: "incorrect OTP",
                 });
             }
         }

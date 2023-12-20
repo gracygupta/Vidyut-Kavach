@@ -8,14 +8,14 @@ const user = express_1.default.Router();
 const express_validator_1 = require("express-validator");
 const reqValidator_1 = require("../middlewares/reqValidator");
 const user_auth_1 = require("../controllers/user_auth");
-const emailController_1 = require("../controllers/emailController");
+// import { sendOTP } from "../controllers/emailController";
 // @route   POST /signin
 // @desc    login user and return jwt
 // @access  Public
 user.post("/signin", [
     (0, express_validator_1.body)("empID", "employee ID required").exists().isString(),
     (0, express_validator_1.body)("password", "password is required").exists().isString(),
-], reqValidator_1.validateRequest, user_auth_1.verifyCredentials, emailController_1.sendOTP);
+], reqValidator_1.validateRequest, user_auth_1.verifyCredentials);
 // @route   POST /verify_otp
 // @desc    verify otp
 // @access  Public

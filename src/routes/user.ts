@@ -3,7 +3,7 @@ const user = express.Router();
 import { body } from "express-validator";
 import { validateRequest } from "../middlewares/reqValidator";
 import { verifyCredentials, verifyOtp } from "../controllers/user_auth";
-import { sendOTP } from "../controllers/emailController";
+// import { sendOTP } from "../controllers/emailController";
 
 // @route   POST /signin
 // @desc    login user and return jwt

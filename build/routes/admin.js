@@ -48,8 +48,7 @@ admin.post("/signup", [
         .custom(reqValidator_1.isEmailUnique),
     (0, express_validator_1.body)("role", "Role is not specified.")
         .exists()
-        .isString()
-        .custom(reqValidator_1.isCorrectRole),
+        .isString(),
     (0, express_validator_1.body)("password", "Password should be at least 2 characters.")
         .exists()
         .isLength({ min: 6 }),
