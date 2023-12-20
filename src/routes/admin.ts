@@ -9,17 +9,19 @@ import {
 } from "../middlewares/reqValidator";
 import { signUp, verifyCredentials } from "../controllers/user_auth";
 import { add_privilege, get_privileges, get_roles, add_role } from "../controllers/miscellaneous";
+import { checkToken, check_admin } from "../middlewares/check_role";
 
 // @route   POST /get_privileges
 // @desc    get all privileges
 // @access  Public
-admin.get("/get_privileges", get_privileges);
+admin.get("/get_privileges",checkToken, check_admin, get_privileges);
 
 // @route   POST /add_privilege
 // @desc    add privileges for roles
 // @access  Admin
 admin.post(
   "/add_privilege",
+  checkToken, check_admin,
   [
     body("name", "name is required").exists().isString()
   ],
@@ -30,7 +32,7 @@ admin.post(
 // @route   POST /add_role
 // @desc    add user role and privileges
 // @access  Admin
-admin.post("/add_role", [
+admin.post("/add_role", checkToken, check_admin,[
     body("name", "name of role is required").exists(),
     body("privileges", "select privileges").exists().isArray()
  ],
@@ -41,7 +43,7 @@ admin.post("/add_role", [
 // @route   POST /get_role
 // @desc    get all roles
 // @access  Public
-admin.get("/get_roles", get_roles);
+admin.get("/get_roles",checkToken, check_admin, get_roles);
 
 
 // @route   POST /signup
@@ -49,6 +51,7 @@ admin.get("/get_roles", get_roles);
 // @access  Admin
 admin.post(
   "/signup",
+  checkToken, check_admin,
   [
     body("empID", "Employee ID missing.")
       .exists()
