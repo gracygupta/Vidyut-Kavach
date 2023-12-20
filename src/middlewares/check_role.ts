@@ -32,17 +32,17 @@ const checkToken = (req: CustomRequest, res: Response, next: NextFunction) => {
     }
 };
 
-const check_admin = (req: Request, res: Response, next: NextFunction)=>{
-    try{
-        const role = req.body.user.role
-    }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error"
-        })
-    }
-}
+// const check_admin = (req: Request, res: Response, next: NextFunction)=>{
+//     try{
+//         const role = req.body.user.role;
+//     }
+//     catch(err){
+//         console.log(err);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Internal Server Error"
+//         })
+//     }
+// }
 
 export default checkToken;
