@@ -8,7 +8,8 @@ import {
   get_security_logs,
   get_honeypot_logs,
   get_all_honeypot_logs,
-  get_all_security_logs
+  get_all_security_logs,
+  get_access_logs
 } from "../controllers/alertControllers";
 import { validateRequest } from "../middlewares/reqValidator";
 
@@ -44,9 +45,10 @@ alert.post(
 );
 
 alert.get("/latest_24_hours", latest_24_hours);
-alert.get("/get_security_logs/:log", get_security_logs);
-alert.get("/get_honeypot_logs/:log", get_honeypot_logs);
-alert.get("//get_security_logs", get_all_security_logs);
+alert.get("/get_security_logs/:logs", get_security_logs);
+alert.get("/get_honeypot_logs/:logs", get_honeypot_logs);
+alert.get("/get_security_logs", get_all_security_logs);
 alert.get("/get_honeypot_logs", get_all_honeypot_logs);
+alert.get("/get_access_logs", get_access_logs);
 
 export default alert;

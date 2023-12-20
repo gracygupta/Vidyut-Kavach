@@ -8,13 +8,13 @@ interface CustomRequest extends ExpressRequest {
 
 const SECRET_KEY = process.env.SECRET_KEY ? process.env.SECRET_KEY : 'vidyut';
 
-const validateRequest = (req: CustomRequest, res: Response, next: NextFunction) => {
+const checkToken = (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.token as string;
 
         if (token) {
             const user = jwt.verify(token, SECRET_KEY);
-            req.user = user;
+            req.body.user = user;
             console.log(user);
             next();
         } else {
@@ -32,4 +32,17 @@ const validateRequest = (req: CustomRequest, res: Response, next: NextFunction) 
     }
 };
 
-export default validateRequest;
+const check_admin = (req: Request, res: Response, next: NextFunction)=>{
+    try{
+        const role = req.body.user.role
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        })
+    }
+}
+
+export default checkToken;

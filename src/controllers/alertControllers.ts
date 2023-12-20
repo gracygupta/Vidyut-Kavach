@@ -7,15 +7,22 @@ import IDS from "../models/ids";
 
 const add_security_alert = async (req: Request, res: Response) => {
   try {
-    const { alert_id, type, severity, attacker_ip, action, description, timestamp } =
-      req.body;
+    const {
+      alert_id,
+      type,
+      severity,
+      attacker_ip,
+      action,
+      description,
+      timestamp,
+    } = req.body;
     await SecurityAlert.create({
       alert_id: alert_id,
       type: type,
       severity: severity,
       attacker_ip: attacker_ip,
       action: action,
-      description: description
+      description: description,
     })
       .then((data) => {
         if (data) {
@@ -68,7 +75,7 @@ const add_honeypot_alert = async (req: Request, res: Response) => {
       protocol: protocol,
       action: action,
       honeypot_id: honeypot_id,
-      honeypot_name: honeypot_name
+      honeypot_name: honeypot_name,
     })
       .then((data) => {
         if (data) {
@@ -107,46 +114,64 @@ const latest_24_hours = async (req: Request, res: Response) => {
       createdAt: { $gte: yesterday },
     });
 
-const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
+    const twentyFourHoursAgo = moment().subtract(24, "hours").toDate();
 
-const securityAction = await SecurityAlert.aggregate([
-  {
-    $match: {
-      action: { $in: ['blocked', 'on-surviellance'] },
-      createdAt: { $gte: twentyFourHoursAgo }
+    const securityAction = await SecurityAlert.aggregate([
+      {
+        $match: {
+          action: { $in: ["blocked", "on-surviellance"] },
+          createdAt: { $gte: twentyFourHoursAgo },
+        },
+      },
+      {
+        $group: {
+          _id: "$action",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const honeypotAction = await HoneypotAlert.aggregate([
+      {
+        $match: {
+          action: { $in: ["blocked", "on-surviellance"] },
+          createdAt: { $gte: twentyFourHoursAgo },
+        },
+      },
+      {
+        $group: {
+          _id: "$action",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    let blockedUserCount = 0;
+    let surveillanceUserCount = 0;
+
+    // Iterate through the user array and count the users based on their status
+    for (const user of securityAction) {
+      console.log(user);
+      if (user._id == "blocked") {
+        blockedUserCount += user.count;
+      } else if (user._id == "on-surviellance") {
+        surveillanceUserCount += user.count;
+      }
     }
-  },
-  {
-    $group: {
-      _id: '$action',
-      count: { $sum: 1 }
+
+    for (const user of honeypotAction) {
+      if (user._id == "blocked") {
+        blockedUserCount += user.count;
+      } else if (user._id == "on-surviellance") {
+        surveillanceUserCount += user.count;
+      }
     }
-  }
-]);
-
-const honeypotAction = await HoneypotAlert.aggregate([
-  {
-    $match: {
-      action: { $in: ['blocked', 'on-surviellance'] },
-      createdAt: { $gte: twentyFourHoursAgo }
-    }
-  },
-  {
-    $group: {
-      _id: '$action',
-      count: { $sum: 1 }
-    }
-  }
-]);
-
-
-
     return res.status(200).json({
       success: true,
       totalSecurityAlerts,
       totalHoneypotAlerts,
-      securityAction,
-      honeypotAction
+      blockedUserCount,
+      surveillanceUserCount,
     });
   } catch (err) {
     console.log(err);
@@ -158,51 +183,61 @@ const honeypotAction = await HoneypotAlert.aggregate([
 };
 
 const get_security_logs = async (req: Request, res: Response) => {
-  try {
-    const currentTime = new Date();
-    var time;
-    if (req.params.logs == "day") {
-      time = moment(currentTime).subtract(24, "hours").toDate();
-    } else if (req.params.logs == "week") {
-      time = moment(currentTime).subtract(7, "days").toDate();
-    } else if (req.params.logs == "month") {
-      time = moment(currentTime).subtract(30, "days").toDate();
+  try {let dateRange;
+    if (req.params.logs === 'day') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 1));
+    } else if (req.params.logs === 'week') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 7));
+    } else if (req.params.logs === 'month') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 30));
     }
-    console.log(time);
-    // Aggregate pipeline for fetching security logs
+    
     const pipeline = [
       {
         $match: {
-          timestamp: {
-            $gte: time,
-            $lte: currentTime,
-          },
-        },
+          createdAt: { $gte: dateRange }
+        }
       },
       {
         $group: {
           _id: {
             type: "$type",
             severity: "$severity",
+            timeframe: {
+              $cond: {
+                if: { $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - 1))] },
+                then: "Last 24 Hours",
+                else: {
+                  $cond: {
+                    if: { $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - 7))] },
+                    then: "Last 7 Days",
+                    else: "Last 30 Days"
+                  }
+                }
+              }
+            }
           },
-          count: { $sum: 1 },
-        },
+          totalAlerts: { $sum: 1 }
+        }
       },
       {
         $project: {
           _id: 0,
+          totalAlerts: 1,
           type: "$_id.type",
-          total: "$count",
           severity: "$_id.severity",
-        },
-      },
+          timeframe: "$_id.timeframe"
+        }
+      }
     ];
+    
 
     const logs = await SecurityAlert.aggregate(pipeline);
-    return res.status(200).json({
-      success: true,
-      logs,
-    });
+
+   return res.status(200).json({
+    success: true,
+    logs
+   })
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -213,50 +248,61 @@ const get_security_logs = async (req: Request, res: Response) => {
 };
 
 const get_honeypot_logs = async (req: Request, res: Response) => {
-  try {
-    const currentTime = new Date();
-    var time;
-    if (req.params.logs == "day") {
-      time = moment(currentTime).subtract(24, "hours").toDate();
-    } else if (req.params.logs == "week") {
-      time = moment(currentTime).subtract(7, "days").toDate();
-    } else if (req.params.logs == "month") {
-      time = moment(currentTime).subtract(30, "days").toDate();
+  try {let dateRange;
+    if (req.params.logs === 'day') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 1));
+    } else if (req.params.logs === 'week') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 7));
+    } else if (req.params.logs === 'month') {
+      dateRange = new Date(new Date().setDate(new Date().getDate() - 30));
     }
-    // Aggregate pipeline for fetching security logs
+    
     const pipeline = [
       {
         $match: {
-          timestamp: {
-            $gte: time,
-            $lte: currentTime,
-          },
-        },
+          createdAt: { $gte: dateRange }
+        }
       },
       {
         $group: {
           _id: {
             type: "$type",
             severity: "$severity",
+            timeframe: {
+              $cond: {
+                if: { $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - 1))] },
+                then: "Last 24 Hours",
+                else: {
+                  $cond: {
+                    if: { $gte: ["$createdAt", new Date(new Date().setDate(new Date().getDate() - 7))] },
+                    then: "Last 7 Days",
+                    else: "Last 30 Days"
+                  }
+                }
+              }
+            }
           },
-          count: { $sum: 1 },
-        },
+          totalAlerts: { $sum: 1 }
+        }
       },
       {
         $project: {
           _id: 0,
+          totalAlerts: 1,
           type: "$_id.type",
-          total: "$count",
           severity: "$_id.severity",
-        },
-      },
+          timeframe: "$_id.timeframe"
+        }
+      }
     ];
+    
 
     const logs = await HoneypotAlert.aggregate(pipeline);
-    return res.status(200).json({
-      success: true,
-      logs,
-    });
+
+   return res.status(200).json({
+    success: true,
+    logs
+   })
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -266,10 +312,10 @@ const get_honeypot_logs = async (req: Request, res: Response) => {
   }
 };
 
+
 const get_all_security_logs = async (req: Request, res: Response) => {
   try {
-    await SecurityAlert.find({})
-      .then((data) => {
+    await SecurityAlert.find({}).sort({createdAt: -1}).then((data) => {
         return res.status(200).json({
           success: true,
           data,
@@ -293,8 +339,7 @@ const get_all_security_logs = async (req: Request, res: Response) => {
 
 const get_all_honeypot_logs = async (req: Request, res: Response) => {
   try {
-    await HoneypotAlert.find({})
-      .then((data) => {
+    await HoneypotAlert.find({}).sort({createdAt: -1}).then((data) => {
         return res.status(200).json({
           success: true,
           data,
@@ -366,27 +411,6 @@ const get_all_access_logs = async (req: Request, res: Response) => {
   }
 };
 
-const add_ids = async (req: Request, res: Response) => {
-  try {
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
-  }
-};
-
-const get_ids_status = async (req: Request, res: Response) => {
-  try {
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
-  }
-};
 
 export {
   add_security_alert,

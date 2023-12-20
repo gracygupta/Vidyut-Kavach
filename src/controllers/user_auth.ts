@@ -162,11 +162,11 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
       // const update = encrypt(data);
       const generatedOtp = generateOTP(data);
       console.log("generatedOTP: ",generatedOtp);
+      const role = await Role.findOne({_id: user.role});
       const token = jwt.sign(
-        { role: user.role, id: user._id, email: user.email },
+        { role: role?.name, id: user._id, email: user.email },
         SECRET_KEY
       );
-      const role = await Role.findOne({_id: user.role});
       if (otp == generatedOtp) {
         await AccessLog.create({
           empID: user.empID,
@@ -177,7 +177,7 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
         });
         return res.status(200).json({
           success: true,
-          role: user.role,
+          role: role?.name,
           username: user.username,
           token: token
         });
@@ -203,6 +203,7 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     });
   }
 };
+
 
 
 export { signUp, verifyCredentials, verifyOtp };
