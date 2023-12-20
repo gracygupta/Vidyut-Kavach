@@ -198,7 +198,8 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     success: true,
                     role: role === null || role === void 0 ? void 0 : role.name,
                     username: user.username,
-                    token: token
+                    token: token,
+                    otp: generatedOtp
                 });
             }
             else {
