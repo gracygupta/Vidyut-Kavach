@@ -12,7 +12,7 @@ import {checkToken, check_admin} from "../middlewares/check_role";
 
 component.post(
   "/add_component",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("componentID", "component id is required").exists(),
     body("name", "name is required").exists(),
@@ -27,7 +27,7 @@ component.post(
 
 component.post(
   "/add_type",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("name", "type name is required").exists(),
     body("source_type", "source_type is required").exists(),
@@ -38,7 +38,7 @@ component.post(
 
 component.post(
   "/add_nanogrid",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("nanogridID", "nanogrid id is required").exists(),
     body("name", "name is required").exists(),
@@ -50,7 +50,7 @@ component.post(
 
 component.post(
   "/add_nanogrid_component",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("name", "nanogrid name is required").exists(),
     body("components", "array of components is required").exists().isArray(),

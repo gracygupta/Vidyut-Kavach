@@ -21,7 +21,7 @@ admin.get("/get_privileges",checkToken, check_admin, get_privileges);
 // @access  Admin
 admin.post(
   "/add_privilege",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("name", "name is required").exists().isString()
   ],
@@ -51,7 +51,7 @@ admin.get("/get_roles", get_roles);
 // @access  Admin
 admin.post(
   "/signup",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("empID", "Employee ID missing.")
       .exists()

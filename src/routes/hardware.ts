@@ -17,7 +17,7 @@ import {checkToken, check_admin, check_maintenance_technical} from "../middlewar
 
 hardware.post(
   "/add_hardware",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("hardwareID", "hardware id is required").exists(),
     body("componentID", "component id is required").exists(),
@@ -37,7 +37,7 @@ hardware.get("/get_all_hardwares", get_hardwares);
 
 hardware.post(
   "/add_model",
-  checkToken, check_admin,
+  // checkToken, check_admin,
   [
     body("modelID", "model id is required").exists().isString(),
     body("company_name", "company name is required").exists().isString(),
@@ -50,7 +50,7 @@ hardware.post(
 
 hardware.post(
   "/update_model",
-  checkToken, check_maintenance_technical,
+  // checkToken, check_maintenance_technical,
   [
     body("company_name", "company name is required").exists().isString(),
     body("model_name", "model name is required").exists().isString(),
@@ -66,7 +66,7 @@ hardware.get("/get_updates", get_updates);
 
 hardware.post(
   "/mark_updates", 
-  checkToken, check_maintenance_technical,
+  // checkToken, check_maintenance_technical,
   [body("hardwareID", "hardware id is required").exists()],
   validateRequest,
   mark_updates
