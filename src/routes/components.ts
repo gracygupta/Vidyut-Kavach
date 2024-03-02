@@ -7,8 +7,9 @@ import {
   add_nanogrid,
   add_nanogrid_component,
   add_type,
+  getActiveComponents,
 } from "../controllers/componentController";
-import {checkToken, check_admin} from "../middlewares/check_role";
+import { checkToken, check_admin } from "../middlewares/check_role";
 
 component.post(
   "/add_component",
@@ -58,5 +59,7 @@ component.post(
   validateRequest,
   add_nanogrid_component
 );
+
+component.get("/:type", getActiveComponents);
 
 export default component;

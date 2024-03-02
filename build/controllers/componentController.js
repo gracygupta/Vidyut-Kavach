@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.add_nanogrid_component = exports.add_nanogrid = exports.add_type = exports.add_component = void 0;
+exports.getActiveComponents = exports.add_nanogrid_component = exports.add_nanogrid = exports.add_type = exports.add_component = void 0;
 const components_1 = __importDefault(require("../models/components"));
 const nanogrids_1 = __importDefault(require("../models/nanogrids"));
 const types_1 = __importDefault(require("../models/types"));
@@ -137,3 +137,44 @@ const add_nanogrid_component = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.add_nanogrid_component = add_nanogrid_component;
+const getActiveComponents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const type = req.params.type;
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "types",
+                    localField: "type",
+                    foreignField: "_id",
+                    as: "typeInfo",
+                },
+            },
+            {
+                $unwind: "$typeInfo",
+            },
+            {
+                $match: {
+                    "typeInfo.source_type": type,
+                },
+            },
+            {
+                $project: {
+                    componentID: 1,
+                    name: 1,
+                    latitude: 1,
+                    longitude: 1,
+                    capacity: 1,
+                    properties: 1,
+                    type: "$typeInfo.name",
+                },
+            },
+        ];
+        const result = yield components_1.default.aggregate(pipeline);
+        return res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+    catch (err) { }
+});
+exports.getActiveComponents = getActiveComponents;

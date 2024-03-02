@@ -17,7 +17,9 @@ admin.get("/get_privileges", check_role_1.checkToken, check_role_1.check_admin, 
 // @route   POST /add_privilege
 // @desc    add privileges for roles
 // @access  Admin
-admin.post("/add_privilege", check_role_1.checkToken, check_role_1.check_admin, [
+admin.post("/add_privilege", 
+// checkToken, check_admin,
+[
     (0, express_validator_1.body)("name", "name is required").exists().isString()
 ], reqValidator_1.validateRequest, miscellaneous_1.add_privilege);
 // @route   POST /add_role
@@ -30,11 +32,13 @@ admin.post("/add_role", check_role_1.checkToken, check_role_1.check_admin, [
 // @route   POST /get_role
 // @desc    get all roles
 // @access  Public
-admin.get("/get_roles", check_role_1.checkToken, check_role_1.check_admin, miscellaneous_1.get_roles);
+admin.get("/get_roles", miscellaneous_1.get_roles);
 // @route   POST /signup
 // @desc    Register user
 // @access  Admin
-admin.post("/signup", check_role_1.checkToken, check_role_1.check_admin, [
+admin.post("/signup", 
+// checkToken, check_admin,
+[
     (0, express_validator_1.body)("empID", "Employee ID missing.")
         .exists()
         .isString()

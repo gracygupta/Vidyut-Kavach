@@ -135,4 +135,50 @@ const add_nanogrid_component = async (req: Request, res: Response) => {
   }
 };
 
-export { add_component, add_type, add_nanogrid, add_nanogrid_component };
+const getActiveComponents = async (req: Request, res: Response) => {
+  try {
+    const type = req.params.type;
+    const pipeline = [
+      {
+        $lookup: {
+          from: "types",
+          localField: "type",
+          foreignField: "_id",
+          as: "typeInfo",
+        },
+      },
+      {
+        $unwind: "$typeInfo",
+      },
+      {
+        $match: {
+          "typeInfo.source_type": type,
+        },
+      },
+      {
+        $project: {
+          componentID: 1,
+          name: 1,
+          latitude: 1,
+          longitude: 1,
+          capacity: 1,
+          properties: 1,
+          type: "$typeInfo.name",
+        },
+      },
+    ];
+    const result = await Component.aggregate(pipeline);
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (err) {}
+};
+
+export {
+  add_component,
+  add_type,
+  add_nanogrid,
+  add_nanogrid_component,
+  getActiveComponents,
+};

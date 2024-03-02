@@ -7,12 +7,13 @@ import jwt from "jsonwebtoken";
 import * as QRCode from "qrcode";
 import AccessLog from "../models/access_logs";
 import { encrypt, decrypt } from "../middlewares/ecryption";
+import moment from "moment-timezone";
 
-const SECRET_KEY = process.env.SECRET_KEY || 'vidyut';
+const SECRET_KEY = process.env.SECRET_KEY || "vidyut";
 
 function generateOTP(inputString: string) {
   // Define the letters to count
-  const lettersToCount = ['1', '2', '6', '7', '5', '9'];
+  const lettersToCount = ["1", "2", "6", "7", "5", "9"];
 
   // Initialize an object to store letter counts
   const letterCounts: any = {};
@@ -24,12 +25,11 @@ function generateOTP(inputString: string) {
     }
   }
 
-  let otp = '';
+  let otp = "";
 
   for (const letter of lettersToCount) {
     const count = letterCounts[letter] || 0;
-    otp +=  (count % 10).toString();
-
+    otp += (count % 10).toString();
   }
 
   return otp;
@@ -149,20 +149,21 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     otp = parseInt(otp);
     const user = await User.findOne({ empID: empID });
     if (user) {
-
       const currentDate = new Date();
+
       const day = currentDate.getDate(); // Day of the month (1-31)
       const month = currentDate.getMonth() + 1; // Month (0-11, so we add 1 to make it 1-12)
       const year = currentDate.getFullYear(); // Year (e.g., 2023)
       const hours = currentDate.getHours(); // Hours (0-23)
       const minutes = currentDate.getMinutes();
+      console.log(hours, minutes);
 
-
-      const data = user?.empID + user?.password+day+month+year+hours+minutes;
+      const data =
+        user?.empID + user?.password + day + month + year + hours + minutes;
       // const update = encrypt(data);
       const generatedOtp = generateOTP(data);
-      console.log("generatedOTP: ",generatedOtp);
-      const role = await Role.findOne({_id: user.role});
+      console.log("generatedOTP: ", generatedOtp);
+      const role = await Role.findOne({ _id: user.role });
       const token = jwt.sign(
         { role: role?.name, id: user._id, email: user.email },
         SECRET_KEY
@@ -173,14 +174,14 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
           role: role?.name,
           ip: req.ip,
           login: true,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         return res.status(200).json({
           success: true,
           role: role?.name,
           username: user.username,
           token: token,
-          otp: generatedOtp
+          otp: generatedOtp,
         });
       } else {
         await AccessLog.create({
@@ -188,7 +189,7 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
           role: role?.name,
           ip: req.ip,
           login: false,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         return res.status(400).json({
           success: false,
@@ -204,7 +205,5 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     });
   }
 };
-
-
 
 export { signUp, verifyCredentials, verifyOtp };

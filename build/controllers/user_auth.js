@@ -43,10 +43,10 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const QRCode = __importStar(require("qrcode"));
 const access_logs_1 = __importDefault(require("../models/access_logs"));
-const SECRET_KEY = process.env.SECRET_KEY || 'vidyut';
+const SECRET_KEY = process.env.SECRET_KEY || "vidyut";
 function generateOTP(inputString) {
     // Define the letters to count
-    const lettersToCount = ['1', '2', '6', '7', '5', '9'];
+    const lettersToCount = ["1", "2", "6", "7", "5", "9"];
     // Initialize an object to store letter counts
     const letterCounts = {};
     // Iterate through the inputString and count the letters
@@ -55,7 +55,7 @@ function generateOTP(inputString) {
             letterCounts[letter] = (letterCounts[letter] || 0) + 1;
         }
     }
-    let otp = '';
+    let otp = "";
     for (const letter of lettersToCount) {
         const count = letterCounts[letter] || 0;
         otp += (count % 10).toString();
@@ -180,6 +180,7 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             const year = currentDate.getFullYear(); // Year (e.g., 2023)
             const hours = currentDate.getHours(); // Hours (0-23)
             const minutes = currentDate.getMinutes();
+            console.log(hours, minutes);
             const data = (user === null || user === void 0 ? void 0 : user.empID) + (user === null || user === void 0 ? void 0 : user.password) + day + month + year + hours + minutes;
             // const update = encrypt(data);
             const generatedOtp = generateOTP(data);
@@ -192,14 +193,14 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     role: role === null || role === void 0 ? void 0 : role.name,
                     ip: req.ip,
                     login: true,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                 });
                 return res.status(200).json({
                     success: true,
                     role: role === null || role === void 0 ? void 0 : role.name,
                     username: user.username,
                     token: token,
-                    otp: generatedOtp
+                    otp: generatedOtp,
                 });
             }
             else {
@@ -208,7 +209,7 @@ const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     role: role === null || role === void 0 ? void 0 : role.name,
                     ip: req.ip,
                     login: false,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                 });
                 return res.status(400).json({
                     success: false,
